@@ -16,7 +16,23 @@ private:
 	int carNum;
 	int speed; // vehicle speed
 	int main(void) {
-		cout << "Car number " << carNum << " has speed " << speed << endl;
+		CSemaphore entryLight("Entry Light", 0, 1);
+		CSemaphore exitLight("Exit Light", 0, 1);
+		CSemaphore pitEmpty("Empty", 0, 1);
+		CSemaphore pitFull("Full", 0, 1);
+
+		// Wait for pit stop
+		if (carNum = 4) {
+			entryLight.Wait();
+			pitFull.Signal();
+			// Do pit stop stuff
+			cout << "Car " << carNum << " is in pitstop!" << endl;
+			Sleep(1000);
+			cout << "Car " << carNum << " has left the pitstop!" << endl;
+			exitLight.Wait(); // wait for exit light
+			pitEmpty.Signal(); // signal that pit empty
+		}
+
 		return 0;
 	}; // active class main function
 
