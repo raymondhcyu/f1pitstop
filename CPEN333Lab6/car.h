@@ -5,6 +5,7 @@
 
 #pragma once
 #include "..\rt.h"
+#include "technicians.h"
 
 #ifndef __car__
 #define __car__

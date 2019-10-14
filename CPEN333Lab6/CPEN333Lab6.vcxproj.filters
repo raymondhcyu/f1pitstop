@@ -21,12 +21,18 @@
     <ClInclude Include="car.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="technicians.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\rt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="raceControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="technicians.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
