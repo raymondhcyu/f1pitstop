@@ -21,8 +21,10 @@ private:
 		CSemaphore pitEmpty("Empty", 0, 1);
 		CSemaphore pitFull("Full", 0, 1);
 
+		cout << "Zoom zoom " << carNum << endl;
+
 		// Wait for pit stop
-		if (carNum = 4) {
+		if (carNum == 4) {
 			entryLight.Wait();
 			pitFull.Signal();
 			// Do pit stop stuff
