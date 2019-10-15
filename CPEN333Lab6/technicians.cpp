@@ -13,7 +13,7 @@ int Supervisor::main(void) {
 	CSemaphore pitFull("Full", 0, 1);
 
 	CSemaphore refuelStart("Refuel Start", 0, 1);
-	CSemaphore refuelStop("Refuel End", 0, 1);
+	CSemaphore refuelStop("Refuel Stop", 1, 1);
 
 	//CSemaphore ready("Pit Crew Ready", 0, 15); // not counting supervisor
 
@@ -22,17 +22,47 @@ int Supervisor::main(void) {
 	//for (int i = 0; i < 16; i++)
 	//	ready.Wait();
 
+	ClassThread <Supervisor> RefuelerThread(this, &Supervisor::Refueler, ACTIVE, NULL);
+
+	/* NEXT STEPS:
+	- Add ClassThread for Jacker and Wheel Nut, Remove, and Fit
+	- Add ClassThread for entry/exit pit full/empty for concurrency
+	- Somehow add ready contition for all pit crewrefuel.stop(wait)?
+
+	(Replicate ReFuelerThread technique, start = 0 stop = 1 and trigger if else)
+	*/
+
 	// Enter and accept vehicle to pit
 	entryLight.Signal();
 	pitFull.Wait();
 	cout << "Pit stop has a vehicle inside, supervisor" << endl;
 
-		// Do pit stop stuff
-		refuelStart.Signal();
-		refuelStop.Signal();
+	// Do pit stop stuff
+	RefuelerThread.WaitForThread();
 
 	exitLight.Signal(); // wait for exit light
 	pitEmpty.Wait(); // signal that pit empty
+
+	return 0;
+}
+
+int Supervisor::Refueler(void* args) {
+	CSemaphore refuelStart("Refuel Start", 0, 1);
+	CSemaphore refuelStop("Refuel Stop", 1, 1);
+
+	refuelStop.Wait(); // wait until refueler ready
+	cout << "Waiting for refueler, supervisor" << endl;
+	refuelStart.Signal(); // signal to fuel tech to refuel
+	
+	return 0;
+}
+
+int Supervisor::RearJack(void* args) {
+
+	return 0;
+}
+
+int Supervisor::FrontJack(void* args) {
 
 	return 0;
 }
@@ -46,17 +76,37 @@ Refueler::Refueler(int num) {
 
 int Refueler::main(void) {
 	CSemaphore refuelStart("Refuel Start", 0, 1);
-	CSemaphore refuelStop("Refuel End", 0, 1);
+	CSemaphore refuelStop("Refuel Stop", 1, 1);
 	//CSemaphore ready("Pit Crew Ready", 0, 15); // not counting supervisor
 	//
 	//ready.Signal(); // Refueler ready
 	refuelStart.Wait(); // wait for refuel start signal from supervisor
-	cout << "\nVehicle being refueled, refueller\n" << endl;
+	cout << "Vehicle being refueled, refueller" << endl;
 	Sleep(1000);
-	cout << "\nVehicle done refuelling, refueller\n" << endl;
-	refuelStop.Wait(); // wait for refuel stop signal from supervisor (or should it send complete status?)
+	cout << "Vehicle done refuelling, refueller" << endl;
+	refuelStop.Signal(); // wait for refuel stop signal from supervisor (or should it send complete status?)
+	
 	return 0;
 }
 
 Refueler::~Refueler() {
+}
+
+int Jacker::main(void) {
+	//CSemaphore ready("Pit Crew Ready", 0, 15); // not counting supervisor
+	//
+	//ready.Signal(); // Jacker ready
+
+	return 0;
+}
+
+Jacker::~Jacker() {
+}
+
+int Wheeler::main(void) {
+
+	return 0;
+}
+
+Wheeler::~Wheeler() {
 }

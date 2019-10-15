@@ -36,6 +36,6 @@ int main(void) {
 	for (int i = 0; i < instances; i++)
 		myCars[i]->WaitForThread();
 
-	cout << "Race ended..." << endl;
+	cout << "Race ended, winner winnder chicken dinner!" << endl;
 	return 0;
 }
