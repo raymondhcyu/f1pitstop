@@ -29,5 +29,6 @@ private:
 
 public:
 	Refueler(int num);
+	~Refueler();
 };
 #endif

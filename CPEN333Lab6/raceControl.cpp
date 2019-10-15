@@ -26,16 +26,12 @@ int main(void) {
 	}
 	
 	// Create supervisor active thread
-	Supervisor S1(99);
-	S1.Resume();
-	S1.WaitForThread();
-	//// Call pit stop (should actually be supervisor)
-	//entryLight.Signal();
-	//pitFull.Wait();
-	//// Do pit stop stuff
-	//cout << "Pit stop has a vehicle inside!" << endl;
-	//exitLight.Signal(); // wait for exit light
-	//pitEmpty.Wait(); // signal that pit empty
+	Supervisor S(99);
+	Refueler R(98);
+	S.Resume();
+	R.Resume();
+	S.WaitForThread();
+	R.WaitForThread();
 
 	for (int i = 0; i < instances; i++)
 		myCars[i]->WaitForThread();
