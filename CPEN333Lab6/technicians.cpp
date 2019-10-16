@@ -15,13 +15,6 @@ int Supervisor::main(void) {
 	CSemaphore refuelStart("Refuel Start", 0, 1);
 	CSemaphore refuelStop("Refuel Stop", 1, 1);
 
-	//CSemaphore ready("Pit Crew Ready", 0, 15); // not counting supervisor
-
-	// Accept pit stop
-	// Wait for all technicians to be ready
-	//for (int i = 0; i < 16; i++)
-	//	ready.Wait();
-
 	ClassThread <Supervisor> RefuelerThread(this, &Supervisor::Refueler, ACTIVE, NULL);
 
 	/* NEXT STEPS:
@@ -77,9 +70,7 @@ Refueler::Refueler(int num) {
 int Refueler::main(void) {
 	CSemaphore refuelStart("Refuel Start", 0, 1);
 	CSemaphore refuelStop("Refuel Stop", 1, 1);
-	//CSemaphore ready("Pit Crew Ready", 0, 15); // not counting supervisor
-	//
-	//ready.Signal(); // Refueler ready
+
 	refuelStart.Wait(); // wait for refuel start signal from supervisor
 	cout << "Vehicle being refueled, refueller" << endl;
 	Sleep(1000);
@@ -93,9 +84,6 @@ Refueler::~Refueler() {
 }
 
 int Jacker::main(void) {
-	//CSemaphore ready("Pit Crew Ready", 0, 15); // not counting supervisor
-	//
-	//ready.Signal(); // Jacker ready
 
 	return 0;
 }

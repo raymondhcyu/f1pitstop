@@ -24,7 +24,7 @@ private:
 
 		cout << "Zoom zoom " << carNum << endl;
 
-		// Wait for pit stop
+		// Wait for pit stop, example car 4 going to pit
 		if (carNum == 4) {
 			entryLight.Wait();
 			pitFull.Signal();
