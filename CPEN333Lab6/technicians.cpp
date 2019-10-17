@@ -1,7 +1,6 @@
 #include "technicians.h"
 
-Supervisor::Supervisor(void) {
-}
+Supervisor::Supervisor(void) {}
 
 int Supervisor::main(void) {
 	cout << "Accepting a pit stop vehicle, supervisor" << endl;
@@ -43,7 +42,7 @@ int Supervisor::main(void) {
 	entryLight.Signal();
 	pitFull.Wait();
 
-	console.Wait(); // Protect console (shared resource)
+	console.Wait(); // protect console (shared resource)
 	cout << "Pit stop has a vehicle inside, supervisor" << endl;
 	console.Signal();
 
