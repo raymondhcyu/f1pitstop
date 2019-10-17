@@ -25,6 +25,16 @@ int Supervisor::main(void) {
 	CSemaphore frontWheelRemovalDone("Front Wheels Removal Done", 0, 2); // one for each left and right wheel
 	CSemaphore frontWheelReplaceDone("Front Wheels Replace Done", 0, 2);
 
+	CSemaphore rearJackUp("Rear Jack Up", 0, 1); // jack up rear of vehicle for servicing
+	CSemaphore rearJackDone("Rear Jack Done", 0, 1);
+	CSemaphore rearJackDown("Rear Jack Down", 0, 1); // jack down rear of vehicle to race
+
+	CSemaphore rearNutRemovalDone("Rear Nuts Removal Done", 0, 2); // one for each left and right nut
+	CSemaphore rearNutInstallDone("Rear Nuts Install Done", 0, 2);
+
+	CSemaphore rearWheelRemovalDone("Rear Wheels Removal Done", 0, 2); // one for each left and right wheel
+	CSemaphore rearWheelReplaceDone("Rear Wheels Replace Done", 0, 2);
+
 	ClassThread <Supervisor> RefuelerThread(this, &Supervisor::Refueler, ACTIVE, NULL);
 	ClassThread <Supervisor> FrontJackThread(this, &Supervisor::FrontJack, ACTIVE, NULL);
 	ClassThread <Supervisor> RearJackThread(this, &Supervisor::RearJack, ACTIVE, NULL);
@@ -40,7 +50,7 @@ int Supervisor::main(void) {
 	// Do pit stop stuff
 	RefuelerThread.WaitForThread();
 	FrontJackThread.WaitForThread();
-	//RearJackThread.WaitForThread();
+	RearJackThread.WaitForThread();
 
 	console.Wait();
 	cout << "Pit stop vehicle serviced and releasing, supervisor" << endl;
@@ -85,10 +95,17 @@ int Supervisor::FrontJack(void* args) {
 }
 
 int Supervisor::RearJack(void* args) {
+	CMutex console("Console");
+	CSemaphore rearJackUp("Rear Jack Up", 0, 1);
 	CSemaphore rearJackDown("Rear Jack Down", 0, 1);
 
-	rearJackDown.Wait(); // wait until jack tech ready
-	cout << "Waiting to rear jack up, supervisor" << endl;
+	rearJackUp.Signal(); // start front jack up
+
+	console.Wait();
+	cout << "Instruction to jack rear up, supervisor" << endl;
+	console.Signal();
+
+	rearJackDown.Wait(); // wait for jack down
 
 	return 0;
 }
@@ -129,29 +146,38 @@ int JackTech::main(void) {
 	CSemaphore frontJackDone("Front Jack Done", 0, 1);
 	CSemaphore frontNutInstallDone("Front Nuts Install Done", 0, 2);
 	CSemaphore frontJackDown("Front Jack Down", 0, 1);
+	CSemaphore rearJackUp("Rear Jack Up", 0, 1);
+	CSemaphore rearJackDone("Rear Jack Done", 0, 1);
+	CSemaphore rearNutInstallDone("Rear Nuts Install Done", 0, 2);
+	CSemaphore rearJackDown("Rear Jack Down", 0, 1);
 
 	frontJackUp.Wait(); // wait for jack up signal from supervisor
+	rearJackUp.Wait(); // wait for jack up signal from supervisor
 
 	console.Wait();
-	cout << "Vehicle front being jacked up, JackTech" << endl;
+	cout << "Vehicle front and rear being jacked up, JackTech" << endl;
 	console.Signal();
 
 	Sleep(750);
 	frontJackDone.Signal(); // front jack done jacking up, signal to NutTech
+	rearJackDone.Signal(); // rear jack done jacking up, signal to NutTech
 
 	console.Wait();
-	cout << "Vehicle front done jacking up, JackTech" << endl;
+	cout << "Vehicle front and rear done jacking up, JackTech" << endl;
 	console.Signal();
 
 	frontNutInstallDone.Wait(); // wait twice for nuts to reinstall
 	frontNutInstallDone.Wait();
+	rearNutInstallDone.Wait(); // wait twice for nuts to reinstall
+	rearNutInstallDone.Wait();
 
 	console.Wait();
-	cout << "Vehicle front being jacked down, JackTech" << endl;
+	cout << "Vehicle front and rear being jacked down, JackTech" << endl;
 	console.Signal();
 
 	Sleep(500);
 	frontJackDown.Signal(); // signal completion, tires on asphalt
+	rearJackDown.Signal();  // signal completion, tires on asphalt
 
 	console.Wait();
 	cout << "Vehicle done jacking down, JackTech" << endl;
@@ -170,8 +196,13 @@ int NutTech::main(void) {
 	CSemaphore frontNutRemovalDone("Front Nuts Removal Done", 0, 2);
 	CSemaphore frontWheelReplaceDone("Front Wheels Replace Done", 0, 2);
 	CSemaphore frontNutInstallDone("Front Nuts Install Done", 0, 2);
+	CSemaphore rearJackDone("Rear Jack Done", 0, 1);
+	CSemaphore rearNutRemovalDone("Rear Nuts Removal Done", 0, 2);
+	CSemaphore rearWheelReplaceDone("Rear Wheels Replace Done", 0, 2);
+	CSemaphore rearNutInstallDone("Rear Nuts Install Done", 0, 2);
 
 	frontJackDone.Wait(); // wait for signal from JackTech
+	rearJackDone.Wait(); // wait for signal from JackTech
 
 	console.Wait();
 	cout << "Removing nuts, NutTech" << endl;
@@ -180,6 +211,8 @@ int NutTech::main(void) {
 	Sleep(750);
 	frontNutRemovalDone.Signal(); // signal nut removal process done
 	frontNutRemovalDone.Signal();
+	rearNutRemovalDone.Signal(); // signal nut removal process done
+	rearNutRemovalDone.Signal();
 
 	console.Wait();
 	cout << "Done removing nuts, NutTech" << endl;
@@ -187,6 +220,8 @@ int NutTech::main(void) {
 
 	frontWheelReplaceDone.Wait(); // wait for signal from WheelReplaceTech
 	frontWheelReplaceDone.Wait();
+	rearWheelReplaceDone.Wait(); // wait for signal from WheelReplaceTech
+	rearWheelReplaceDone.Wait();
 
 	console.Wait();
 	cout << "Replacing nuts, NutTech" << endl;
@@ -195,6 +230,8 @@ int NutTech::main(void) {
 	Sleep(500);
 	frontNutInstallDone.Signal();
 	frontNutInstallDone.Signal();
+	rearNutInstallDone.Signal();
+	rearNutInstallDone.Signal();
 
 	console.Wait();
 	cout << "Done replacing nuts, NutTech" << endl;
@@ -211,9 +248,13 @@ int WheelRemoveTech::main(void) {
 	CMutex console("Console");
 	CSemaphore frontNutRemovalDone("Front Nuts Removal Done", 0, 2);
 	CSemaphore frontWheelRemovalDone("Front Wheels Removal Done", 0, 2); // one for each left and right wheel
+	CSemaphore rearNutRemovalDone("Rear Nuts Removal Done", 0, 2);
+	CSemaphore rearWheelRemovalDone("Rear Wheels Removal Done", 0, 2); // one for each left and right wheel
 
 	frontNutRemovalDone.Wait(); // wait for signals from nut techs
 	frontNutRemovalDone.Wait(); // wait for signals from nut techs
+	rearNutRemovalDone.Wait(); // wait for signals from nut techs
+	rearNutRemovalDone.Wait(); // wait for signals from nut techs
 
 	console.Wait();
 	cout << "Removing wheels, WheelRemoveTech" << endl;
@@ -222,6 +263,8 @@ int WheelRemoveTech::main(void) {
 	Sleep(1000);
 	frontWheelRemovalDone.Signal();
 	frontWheelRemovalDone.Signal();
+	rearWheelRemovalDone.Signal();
+	rearWheelRemovalDone.Signal();
 
 	console.Wait();
 	cout << "Done removing wheel, WheelRemoveTech" << endl;
@@ -238,9 +281,13 @@ int WheelReplaceTech::main(void) {
 	CMutex console("Console");
 	CSemaphore frontWheelRemovalDone("Front Wheels Removal Done", 0, 2);
 	CSemaphore frontWheelReplaceDone("Front Wheels Replace Done", 0, 2);
+	CSemaphore rearWheelRemovalDone("Rear Wheels Removal Done", 0, 2);
+	CSemaphore rearWheelReplaceDone("Rear Wheels Replace Done", 0, 2);
 
 	frontWheelRemovalDone.Wait(); // wait for signals from wheel removal tech
 	frontWheelRemovalDone.Wait(); // wait for signals from wheel removal tech
+	rearWheelRemovalDone.Wait(); // wait for signals from wheel removal tech
+	rearWheelRemovalDone.Wait(); // wait for signals from wheel removal tech
 
 	console.Wait();
 	cout << "Replacing wheels, WheelReplaceTech" << endl;
@@ -249,6 +296,8 @@ int WheelReplaceTech::main(void) {
 	Sleep(500);
 	frontWheelReplaceDone.Signal();
 	frontWheelReplaceDone.Signal();
+	rearWheelReplaceDone.Signal();
+	rearWheelReplaceDone.Signal();
 
 	console.Wait();
 	cout << "Done replacing wheels, WheelRepaceTech" << endl;
