@@ -30,10 +30,9 @@ private:
 			pitFull.Signal();
 			// Do pit stop stuff
 			cout << "Car " << carNum << " is in pitstop!" << endl;
-			Sleep(1000);
-			cout << "Car " << carNum << " has left the pitstop!" << endl;
 			exitLight.Wait(); // wait for exit light
 			pitEmpty.Signal(); // signal that pit empty
+			cout << "Car " << carNum << " has left the pitstop!" << endl;
 		}
 
 		return 0;
