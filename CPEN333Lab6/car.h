@@ -15,10 +15,12 @@ class car : public ActiveClass
 {
 private:
 	int carNum;
-	int laps;
+	int laps; // lap counter
 	int lapTime;
-	string statusPit = "In pit";
-	string statusRacing = "Racing";
+	int pitStopOne; // select lap to pit stop
+	int pitStopTwo;
+	string status[2] = {"In Pit", "Racing"};
+	string theStatus = "";
 
 	int main(void) { // return winning car
 		CMutex console("Console");
@@ -28,44 +30,61 @@ private:
 		CSemaphore pitFull("Full", 0, 1);
 
 		while (laps < 60) {
-			if (false)
-				break;
-			else {
-				Sleep(lapTime * 25);
-				laps++;
+			Sleep(lapTime * 25);
+			laps++;
+
+			console.Wait();
+			MOVE_CURSOR(0, carNum + 2);
+			cout << carNum << "\t" << laps << "\t" << endl;
+			console.Signal();
+			
+			// Debugging
+			console.Wait();
+			MOVE_CURSOR(0, 13);
+			cout << entryLight.Read() << endl;
+			console.Signal();
+
+			// Check for pit condition
+			if ((entryLight.Read() == 1) && ((laps == pitStopOne) || (laps == pitStopTwo))) {
+				theStatus = status[0]; // update print screen
+
+				entryLight.Wait();
+				pitFull.Signal();
+
+				// Do pit stop stuff
 				console.Wait();
 				MOVE_CURSOR(0, carNum + 2);
-				cout << carNum << "\t" << laps << "\t" << statusRacing << "\t" << endl;
+				cout << "\t\t" << status[0] << endl;
+				console.Signal();
+
+				exitLight.Wait(); // wait for exit light
+				pitEmpty.Signal(); // signal that pit empty
+
+				console.Wait();
+				MOVE_CURSOR(0, carNum + 2);
+				cout << "\t\t" << status[1] << endl;
+				console.Signal();
+
+				laps++; // hotfix
+			}
+			else {
+				console.Wait();
+				MOVE_CURSOR(0, carNum + 2);
+				cout << "\t\t" << status[1] << endl;
 				console.Signal();
 			}
 		}
-
-		//// Wait for pit stop, example car 4 going to pit
-		//if (carNum == 4) {
-		//	entryLight.Wait();
-		//	pitFull.Signal();
-
-		//	// Do pit stop stuff
-		//	console.Wait();
-		//	cout << "Car " << carNum << " is in pitstop!" << endl;
-		//	console.Signal();
-
-		//	exitLight.Wait(); // wait for exit light
-		//	pitEmpty.Signal(); // signal that pit empty
-
-		//	console.Wait();
-		//	cout << "Car " << carNum << " has left the pitstop!" << endl;
-		//	console.Signal();
-		//}
 
 		return 0;
 	};
 
 public:
-	car(int num) { // default constructor, needs to be public to be access outside
+	car(int num, int pitOne, int pitTwo) { // default constructor, needs to be public to be access outside
 		carNum = num;
 		laps = 0;
 		lapTime = rand() % 5 + 1; // range 1 to 5
+		pitStopOne = pitOne;
+		pitStopTwo = pitTwo;
 	};
 	int GetNum(void) {
 		return carNum;

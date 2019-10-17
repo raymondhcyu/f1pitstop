@@ -18,40 +18,46 @@ int main(void) {
 	cout << "CAR\tLAP\tSTATUS\tPIT ACTION" << endl;
 	getchar();
 
-	for (int i = 0; i < instances; i++)
-		myCars[i] = new car(i);
+	myCars[0] = new car(0, 30, 45);
+
+	// Test with -1
+	for (int i = 1; i < instances; i++) {
+		myCars[i] = new car(i, -1, -1);
+	}
 
 	for (int i = 0; i < instances; i++) {
 		myCars[i]->Resume();
-		Sleep(100);
 	}
 
-	//// Create active objects for pit crew
-	//Supervisor S = Supervisor();
-	//Refueler R = Refueler();
-	//JackTech J = JackTech();
-	//NutTech N = NutTech();
-	//WheelRemoveTech WOFF = WheelRemoveTech();
-	//WheelReplaceTech WON = WheelReplaceTech();
+	// Create active objects for pit crew
+	Supervisor S = Supervisor();
+	Refueler R = Refueler();
+	JackTech J = JackTech();
+	NutTech N = NutTech();
+	WheelRemoveTech WOFF = WheelRemoveTech();
+	WheelReplaceTech WON = WheelReplaceTech();
 
-	//S.Resume();
-	//R.Resume();
-	//J.Resume();
-	//N.Resume();
-	//WOFF.Resume();
-	//WON.Resume();
+	S.Resume();
+	R.Resume();
+	J.Resume();
+	N.Resume();
+	WOFF.Resume();
+	WON.Resume();
 
-	//S.WaitForThread();
-	//R.WaitForThread();
-	//J.WaitForThread();
-	//N.WaitForThread();
-	//WOFF.WaitForThread();
-	//WON.WaitForThread();
+	S.WaitForThread();
+	R.WaitForThread();
+	J.WaitForThread();
+	N.WaitForThread();
+	WOFF.WaitForThread();
+	WON.WaitForThread();
 
 	for (int i = 0; i < instances; i++)
 		myCars[i]->WaitForThread();
 
+	console.Wait();
+	MOVE_CURSOR(0, 30);
 	cout << "Race ended, winner winner chicken dinner!" << endl;
+	console.Signal();
 	getchar();
 	return 0;
 }
