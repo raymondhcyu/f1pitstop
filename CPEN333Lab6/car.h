@@ -20,7 +20,6 @@ private:
 	int pitStopOne; // select lap to pit stop
 	int pitStopTwo;
 	string status[2] = {"In Pit", "Racing"};
-	string theStatus = "";
 
 	int main(void) { // return winning car
 		CMutex console("Console");
@@ -37,7 +36,7 @@ private:
 			MOVE_CURSOR(0, carNum + 2);
 			cout << carNum << "\t" << laps << "\t" << endl;
 			console.Signal();
-			
+
 			// Debugging
 			console.Wait();
 			MOVE_CURSOR(0, 13);
@@ -46,8 +45,6 @@ private:
 
 			// Check for pit condition
 			if ((entryLight.Read() == 1) && ((laps == pitStopOne) || (laps == pitStopTwo))) {
-				theStatus = status[0]; // update print screen
-
 				entryLight.Wait();
 				pitFull.Signal();
 
@@ -60,10 +57,10 @@ private:
 				exitLight.Wait(); // wait for exit light
 				pitEmpty.Signal(); // signal that pit empty
 
-				console.Wait();
-				MOVE_CURSOR(0, carNum + 2);
-				cout << "\t\t" << status[1] << endl;
-				console.Signal();
+				//console.Wait();
+				//MOVE_CURSOR(0, carNum + 2);
+				//cout << "\t\t" << status[1] << endl;
+				//console.Signal();
 
 				laps++; // hotfix
 			}
