@@ -1,7 +1,6 @@
 #include "technicians.h"
 
-Supervisor::Supervisor(int num) {
-	data = num;
+Supervisor::Supervisor(void) {
 }
 
 int Supervisor::main(void) {
@@ -12,18 +11,15 @@ int Supervisor::main(void) {
 	CSemaphore pitEmpty("Empty", 0, 1);
 	CSemaphore pitFull("Full", 0, 1);
 
+	CSemaphore refuelStop("Refuel Stop", 0, 1);
 	CSemaphore refuelStart("Refuel Start", 0, 1);
-	CSemaphore refuelStop("Refuel Stop", 1, 1);
+
+	CSemaphore frontJackDown("Front Jack Down", 0, 1);
+	CSemaphore rearJackDown("Rear Jack Down", 0, 1);
 
 	ClassThread <Supervisor> RefuelerThread(this, &Supervisor::Refueler, ACTIVE, NULL);
-
-	/* NEXT STEPS:
-	- Add ClassThread for Jacker and Wheel Nut, Remove, and Fit
-	- Add ClassThread for entry/exit pit full/empty for concurrency
-	- Somehow add ready contition for all pit crewrefuel.stop(wait)?
-
-	(Replicate ReFuelerThread technique, start = 0 stop = 1 and trigger if else)
-	*/
+	ClassThread <Supervisor> FrontJackThread(this, &Supervisor::FrontJack, ACTIVE, NULL);
+	ClassThread <Supervisor> RearJackThread(this, &Supervisor::RearJack, ACTIVE, NULL);
 
 	// Enter and accept vehicle to pit
 	entryLight.Signal();
@@ -32,6 +28,8 @@ int Supervisor::main(void) {
 
 	// Do pit stop stuff
 	RefuelerThread.WaitForThread();
+	//FrontJackThread.WaitForThread();
+	//RearJackThread.WaitForThread();
 
 	exitLight.Signal(); // wait for exit light
 	pitEmpty.Wait(); // signal that pit empty
@@ -40,36 +38,42 @@ int Supervisor::main(void) {
 }
 
 int Supervisor::Refueler(void* args) {
+	CSemaphore refuelStop("Refuel Stop", 0, 1);
 	CSemaphore refuelStart("Refuel Start", 0, 1);
-	CSemaphore refuelStop("Refuel Stop", 1, 1);
 
+	refuelStart.Signal();
+	cout << "Instruction to start refuelling, supervisor" << endl;
 	refuelStop.Wait(); // wait until refueler ready
-	cout << "Waiting for refueler, supervisor" << endl;
-	refuelStart.Signal(); // signal to fuel tech to refuel
-	
-	return 0;
-}
-
-int Supervisor::RearJack(void* args) {
 
 	return 0;
 }
 
 int Supervisor::FrontJack(void* args) {
+	CSemaphore frontJackDown("Front Jack Down", 0, 1);
+
+	frontJackDown.Wait(); // wait until jack tech ready
+	cout << "Waiting to front jack up, supervisor" << endl;
 
 	return 0;
 }
 
-Supervisor::~Supervisor() {
+int Supervisor::RearJack(void* args) {
+	CSemaphore rearJackDown("Rear Jack Down", 0, 1);
+
+	rearJackDown.Wait(); // wait until jack tech ready
+	cout << "Waiting to rear jack up, supervisor" << endl;
+
+	return 0;
 }
 
-Refueler::Refueler(int num) {
-	data = num;
+Supervisor::~Supervisor() {}
+
+Refueler::Refueler(void) {
 }
 
 int Refueler::main(void) {
+	CSemaphore refuelStop("Refuel Stop", 0, 1);
 	CSemaphore refuelStart("Refuel Start", 0, 1);
-	CSemaphore refuelStop("Refuel Stop", 1, 1);
 
 	refuelStart.Wait(); // wait for refuel start signal from supervisor
 	cout << "Vehicle being refueled, refueller" << endl;
@@ -80,16 +84,33 @@ int Refueler::main(void) {
 	return 0;
 }
 
-Refueler::~Refueler() {
+Refueler::~Refueler() {}
+
+JackTech::JackTech(void) {
 }
 
-int Jacker::main(void) {
+int JackTech::main(void) {
+	CSemaphore jackUp("Jack Up", 0, 1);
+	CSemaphore jackDown("Jack Down", 1, 1);
+
+	jackUp.Wait(); // wait for jack up signal from supervisor
+	cout << "Vehicle being jacked up, JackTechFront" << endl;
+	Sleep(500);
+	cout << "Vehicle done jacking up, JackTechFront" << endl;
 
 	return 0;
 }
 
-Jacker::~Jacker() {
+JackTech::~JackTech() {}
+
+int NutTechFrontLeft::main(void) {
+	CSemaphore nutOn("Nut On", 0, 2);
+	CSemaphore nutOff("Nut Off", 2, 2);
+
+	return 0;
 }
+
+NutTechFrontLeft::~NutTechFrontLeft() {}
 
 int Wheeler::main(void) {
 

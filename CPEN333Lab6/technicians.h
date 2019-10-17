@@ -13,7 +13,6 @@
 class Supervisor : public ActiveClass
 {
 private:
-	int data;
 	int main(void);
 
 	int Refueler(void* args);
@@ -21,30 +20,39 @@ private:
 	int FrontJack(void* args);
 
 public:
-	Supervisor(int num); // default constructor, needs to be public to be access outside
+	Supervisor(void); // default constructor, needs to be public to be access outside
 	~Supervisor();
 };
 
 class Refueler : public ActiveClass
 {
 private:
-	int data;
 	int main(void);
 
 public:
-	Refueler(int num);
+	Refueler();
 	~Refueler();
 };
 
-class Jacker : public ActiveClass
+class JackTech : public ActiveClass
+{
+private:
+	int main(void);
+
+public:
+	JackTech();
+	~JackTech();
+};
+
+class NutTechFrontLeft : public ActiveClass
 {
 private:
 	int data;
 	int main(void);
 
 public:
-	Jacker(int num);
-	~Jacker();
+	NutTechFrontLeft(int num);
+	~NutTechFrontLeft();
 };
 
 class Wheeler : public ActiveClass

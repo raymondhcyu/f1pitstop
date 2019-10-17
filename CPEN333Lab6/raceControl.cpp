@@ -26,8 +26,8 @@ int main(void) {
 	}
 	
 	// Create supervisor active thread
-	Supervisor S(99);
-	Refueler R(98);
+	Supervisor S = Supervisor();
+	Refueler R = Refueler();
 	S.Resume();
 	R.Resume();
 	S.WaitForThread();
