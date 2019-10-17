@@ -14,18 +14,16 @@ int main(void) {
 	for (int i = 0; i < instances; i++)
 		myCars[i] = new car(i);
 
-	// Start race
 	cout << "Race starting!" << endl;
 	for (int i = 0; i < instances; i++)
 		myCars[i]->Accelerate(100);
 
-	// Resume main function
 	for (int i = 0; i < instances; i++) {
 		myCars[i]->Resume();
 		Sleep(100);
 	}
 	
-	// Create supervisor active thread
+	// Create active objects for pit crew
 	Supervisor S = Supervisor();
 	Refueler R = Refueler();
 	JackTech J = JackTech();

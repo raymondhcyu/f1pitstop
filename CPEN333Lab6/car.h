@@ -17,6 +17,7 @@ private:
 	int carNum;
 	int speed; // vehicle speed
 	int main(void) {
+		CMutex console("Console");
 		CSemaphore entryLight("Entry Light", 0, 1);
 		CSemaphore exitLight("Exit Light", 0, 1);
 		CSemaphore pitEmpty("Empty", 0, 1);
@@ -28,11 +29,18 @@ private:
 		if (carNum == 4) {
 			entryLight.Wait();
 			pitFull.Signal();
+
 			// Do pit stop stuff
+			console.Wait();
 			cout << "Car " << carNum << " is in pitstop!" << endl;
+			console.Signal();
+
 			exitLight.Wait(); // wait for exit light
 			pitEmpty.Signal(); // signal that pit empty
+
+			console.Wait();
 			cout << "Car " << carNum << " has left the pitstop!" << endl;
+			console.Signal();
 		}
 
 		return 0;
