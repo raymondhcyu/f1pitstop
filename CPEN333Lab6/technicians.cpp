@@ -14,8 +14,15 @@ int Supervisor::main(void) {
 	CSemaphore refuelStop("Refuel Stop", 0, 1);
 	CSemaphore refuelStart("Refuel Start", 0, 1);
 
-	CSemaphore frontJackDown("Front Jack Down", 0, 1);
-	CSemaphore rearJackDown("Rear Jack Down", 0, 1);
+	CSemaphore frontJackUp("Front Jack Up", 0, 1); // jack up front of vehicle for servicing
+	CSemaphore frontJackDone("Front Jack Done", 0, 1);
+	CSemaphore frontJackDown("Front Jack Down", 0, 1); // jack down front of vehicle to race
+
+	CSemaphore frontNutRemovalDone("Front Nuts Removal Done", 0, 2); // one for each left and right nut
+	CSemaphore frontNutInstallDone("Front Nuts Install Done", 0, 2);
+
+	CSemaphore frontWheelRemovalDone("Front Wheels Removal Done", 0, 2); // one for each left and right wheel
+	CSemaphore frontWheelReplaceDone("Front Wheels Replace Done", 0, 2);
 
 	ClassThread <Supervisor> RefuelerThread(this, &Supervisor::Refueler, ACTIVE, NULL);
 	ClassThread <Supervisor> FrontJackThread(this, &Supervisor::FrontJack, ACTIVE, NULL);
@@ -28,9 +35,10 @@ int Supervisor::main(void) {
 
 	// Do pit stop stuff
 	RefuelerThread.WaitForThread();
-	//FrontJackThread.WaitForThread();
+	FrontJackThread.WaitForThread();
 	//RearJackThread.WaitForThread();
 
+	cout << "Pit stop vehicle serviced and releasing, supervisor" << endl;
 	exitLight.Signal(); // wait for exit light
 	pitEmpty.Wait(); // signal that pit empty
 
@@ -43,16 +51,18 @@ int Supervisor::Refueler(void* args) {
 
 	refuelStart.Signal();
 	cout << "Instruction to start refuelling, supervisor" << endl;
-	refuelStop.Wait(); // wait until refueler ready
+	refuelStop.Wait();
 
 	return 0;
 }
 
 int Supervisor::FrontJack(void* args) {
+	CSemaphore frontJackUp("Front Jack Up", 0, 1);
 	CSemaphore frontJackDown("Front Jack Down", 0, 1);
 
-	frontJackDown.Wait(); // wait until jack tech ready
-	cout << "Waiting to front jack up, supervisor" << endl;
+	frontJackUp.Signal(); // start front jack up
+	cout << "Instruction to jack front up, supervisor" << endl;
+	frontJackDown.Wait(); // wait for jack down
 
 	return 0;
 }
@@ -78,44 +88,102 @@ int Refueler::main(void) {
 	refuelStart.Wait(); // wait for refuel start signal from supervisor
 	cout << "Vehicle being refueled, refueller" << endl;
 	Sleep(1000);
-	cout << "Vehicle done refuelling, refueller" << endl;
 	refuelStop.Signal(); // wait for refuel stop signal from supervisor (or should it send complete status?)
+	cout << "Vehicle done refuelling, refueller" << endl;
 	
 	return 0;
 }
 
 Refueler::~Refueler() {}
 
-JackTech::JackTech(void) {
-}
+JackTech::JackTech(void) {}
 
 int JackTech::main(void) {
-	CSemaphore jackUp("Jack Up", 0, 1);
-	CSemaphore jackDown("Jack Down", 1, 1);
+	CSemaphore frontJackUp("Front Jack Up", 0, 1);
+	CSemaphore frontJackDone("Front Jack Done", 0, 1);
+	CSemaphore frontNutInstallDone("Front Nuts Install Done", 0, 2);
+	CSemaphore frontJackDown("Front Jack Down", 0, 1);
 
-	jackUp.Wait(); // wait for jack up signal from supervisor
-	cout << "Vehicle being jacked up, JackTechFront" << endl;
+	frontJackUp.Wait(); // wait for jack up signal from supervisor
+	cout << "Vehicle front being jacked up, JackTech" << endl;
+	Sleep(750);
+	frontJackDone.Signal(); // front jack done jacking up, signal to NutTech
+	cout << "Vehicle front done jacking up, JackTech" << endl;
+
+	frontNutInstallDone.Wait(); // wait twice for nuts to reinstall
+	frontNutInstallDone.Wait();
+	cout << "Vehicle front being jacked down, JackTech" << endl;
 	Sleep(500);
-	cout << "Vehicle done jacking up, JackTechFront" << endl;
+	frontJackDown.Signal(); // signal completion, tires on asphalt
+	cout << "Vehicle done jacking down, JackTech" << endl;
 
 	return 0;
 }
 
 JackTech::~JackTech() {}
 
-int NutTechFrontLeft::main(void) {
-	CSemaphore nutOn("Nut On", 0, 2);
-	CSemaphore nutOff("Nut Off", 2, 2);
+NutTech::NutTech() {}
+
+int NutTech::main(void) {
+	CSemaphore frontJackDone("Front Jack Done", 0, 1);
+	CSemaphore frontNutRemovalDone("Front Nuts Removal Done", 0, 2);
+	CSemaphore frontWheelReplaceDone("Front Wheels Replace Done", 0, 2);
+	CSemaphore frontNutInstallDone("Front Nuts Install Done", 0, 2);
+
+	frontJackDone.Wait(); // wait for signal from JackTech
+	cout << "Removing nuts, NutTech" << endl;
+	Sleep(750);
+	frontNutRemovalDone.Signal(); // signal nut removal process done
+	frontNutRemovalDone.Signal();
+	cout << "Done removing nuts, NutTech" << endl;
+
+	frontWheelReplaceDone.Wait(); // wait for signal from WheelReplaceTech
+	frontWheelReplaceDone.Wait();
+	cout << "Replacing nuts, NutTech" << endl;
+	Sleep(500);
+	frontNutInstallDone.Signal();
+	frontNutInstallDone.Signal();
+	cout << "Done replacing nuts, NutTech" << endl;
 
 	return 0;
 }
 
-NutTechFrontLeft::~NutTechFrontLeft() {}
+NutTech::~NutTech() {}
 
-int Wheeler::main(void) {
+WheelRemoveTech::WheelRemoveTech() {}
+
+int WheelRemoveTech::main(void) {
+	CSemaphore frontNutRemovalDone("Front Nuts Removal Done", 0, 2);
+	CSemaphore frontWheelRemovalDone("Front Wheels Removal Done", 0, 2); // one for each left and right wheel
+
+	frontNutRemovalDone.Wait(); // wait for signals from nut techs
+	frontNutRemovalDone.Wait(); // wait for signals from nut techs
+	cout << "Removing wheels, WheelRemoveTech" << endl;
+	Sleep(1000);
+	frontWheelRemovalDone.Signal();
+	frontWheelRemovalDone.Signal();
+	cout << "Done removing wheel, WheelRemoveTech" << endl;
 
 	return 0;
 }
 
-Wheeler::~Wheeler() {
+WheelRemoveTech::~WheelRemoveTech() {}
+
+WheelReplaceTech::WheelReplaceTech() {}
+
+int WheelReplaceTech::main(void) {
+	CSemaphore frontWheelRemovalDone("Front Wheels Removal Done", 0, 2);
+	CSemaphore frontWheelReplaceDone("Front Wheels Replace Done", 0, 2);
+
+	frontWheelRemovalDone.Wait(); // wait for signals from wheel removal tech
+	frontWheelRemovalDone.Wait(); // wait for signals from wheel removal tech
+	cout << "Replacing wheels, WheelReplaceTech" << endl;
+	Sleep(500);
+	frontWheelReplaceDone.Signal();
+	frontWheelReplaceDone.Signal();
+	cout << "Done replacing wheels, WheelRepaceTech" << endl;
+
+	return 0;
 }
+
+WheelReplaceTech::~WheelReplaceTech() {}

@@ -28,14 +28,28 @@ int main(void) {
 	// Create supervisor active thread
 	Supervisor S = Supervisor();
 	Refueler R = Refueler();
+	JackTech J = JackTech();
+	NutTech N = NutTech();
+	WheelRemoveTech WOFF = WheelRemoveTech();
+	WheelReplaceTech WON = WheelReplaceTech();
+
 	S.Resume();
 	R.Resume();
+	J.Resume();
+	N.Resume();
+	WOFF.Resume();
+	WON.Resume();
+
 	S.WaitForThread();
 	R.WaitForThread();
+	J.WaitForThread();
+	N.WaitForThread();
+	WOFF.WaitForThread();
+	WON.WaitForThread();
 
 	for (int i = 0; i < instances; i++)
 		myCars[i]->WaitForThread();
 
-	cout << "Race ended, winner winnder chicken dinner!" << endl;
+	cout << "Race ended, winner winner chicken dinner!" << endl;
 	return 0;
 }

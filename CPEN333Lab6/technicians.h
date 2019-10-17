@@ -44,26 +44,34 @@ public:
 	~JackTech();
 };
 
-class NutTechFrontLeft : public ActiveClass
+class NutTech : public ActiveClass
 {
 private:
-	int data;
 	int main(void);
 
 public:
-	NutTechFrontLeft(int num);
-	~NutTechFrontLeft();
+	NutTech();
+	~NutTech();
 };
 
-class Wheeler : public ActiveClass
+class WheelRemoveTech : public ActiveClass
 {
 private:
-	int data;
 	int main(void);
 
 public:
-	Wheeler(int num);
-	~Wheeler();
+	WheelRemoveTech();
+	~WheelRemoveTech();
+};
+
+class WheelReplaceTech : public ActiveClass
+{
+private:
+	int main(void);
+
+public:
+	WheelReplaceTech();
+	~WheelReplaceTech();
 };
 
 #endif
