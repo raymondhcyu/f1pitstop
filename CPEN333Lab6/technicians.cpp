@@ -43,18 +43,20 @@ int Supervisor::main(void) {
 		entryLight.Signal();
 		pitFull.Wait();
 
-		//console.Wait(); // protect console (shared resource)
-		//cout << "Pit stop has a vehicle inside, supervisor" << endl;
-		//console.Signal();
+		console.Wait(); // protect console (shared resource)
+		MOVE_CURSOR(0, 14);
+		cout << "Pit stop has a vehicle inside, supervisor" << endl;
+		console.Signal();
 
 		// Do pit stop stuff
 		RefuelerThread.WaitForThread();
 		FrontJackThread.WaitForThread();
 		RearJackThread.WaitForThread();
 
-		//console.Wait();
-		//cout << "Pit stop vehicle serviced and releasing, supervisor" << endl;
-		//console.Signal();
+		console.Wait();
+		MOVE_CURSOR(0, 14);
+		cout << "Pit stop vehicle serviced and releasing, supervisor" << endl;
+		console.Signal();
 
 		exitLight.Signal(); // wait for exit light
 		pitEmpty.Wait(); // signal that pit empty
@@ -123,17 +125,14 @@ int Refueler::main(void) {
 
 	while (1) {
 		refuelStart.Wait(); // wait for refuel start signal from supervisor
-
-		//console.Wait();
-		//cout << "Vehicle being refueled, refueller" << endl;
-		//console.Signal();
-
 		Sleep(1000);
-		refuelStop.Signal(); // wait for refuel stop signal from supervisor (or should it send complete status?)
 
-		//console.Wait();
-		//cout << "Vehicle done refuelling, refueller" << endl;
-		//console.Signal();
+		console.Wait();
+		MOVE_CURSOR(0, 15);
+		cout << "Done refuelling vehicle, refueller" << endl;
+		console.Signal();
+
+		refuelStop.Signal(); // wait for refuel stop signal from supervisor (or should it send complete status?)
 	}
 	return 0;
 }
@@ -165,9 +164,10 @@ int JackTech::main(void) {
 		frontJackDone.Signal(); // front jack done jacking up, signal to NutTech
 		rearJackDone.Signal(); // rear jack done jacking up, signal to NutTech
 
-		//console.Wait();
-		//cout << "Vehicle front and rear done jacking up, JackTech" << endl;
-		//console.Signal();
+		console.Wait();
+		MOVE_CURSOR(0, 16);
+		cout << "Done jacking up vehicle front and rear, JackTech" << endl;
+		console.Signal();
 
 		frontNutInstallDone.Wait(); // wait twice for nuts to reinstall
 		frontNutInstallDone.Wait();
@@ -182,9 +182,10 @@ int JackTech::main(void) {
 		frontJackDown.Signal(); // signal completion, tires on asphalt
 		rearJackDown.Signal();  // signal completion, tires on asphalt
 
-		//console.Wait();
-		//cout << "Vehicle done jacking down, JackTech" << endl;
-		//console.Signal();
+		console.Wait();
+		MOVE_CURSOR(0, 16);
+		cout << "Done jacking down vehicle, JackTech" << endl;
+		console.Signal();
 	}
 	return 0;
 }
@@ -217,9 +218,10 @@ int NutTech::main(void) {
 		rearNutRemovalDone.Signal(); // signal nut removal process done
 		rearNutRemovalDone.Signal();
 
-		//console.Wait();
-		//cout << "Done removing nuts, NutTech" << endl;
-		//console.Signal();
+		console.Wait();
+		MOVE_CURSOR(0, 17);
+		cout << "Done removing nuts, NutTech" << endl;
+		console.Signal();
 
 		frontWheelReplaceDone.Wait(); // wait for signal from WheelReplaceTech
 		frontWheelReplaceDone.Wait();
@@ -236,9 +238,10 @@ int NutTech::main(void) {
 		rearNutInstallDone.Signal();
 		rearNutInstallDone.Signal();
 
-		//console.Wait();
-		//cout << "Done replacing nuts, NutTech" << endl;
-		//console.Signal();
+		console.Wait();
+		MOVE_CURSOR(0, 17);
+		cout << "Done replacing nuts, NutTech" << endl;
+		console.Signal();
 	}
 	return 0;
 }
@@ -269,9 +272,10 @@ int WheelRemoveTech::main(void) {
 		rearWheelRemovalDone.Signal();
 		rearWheelRemovalDone.Signal();
 
-		//console.Wait();
-		//cout << "Done removing wheel, WheelRemoveTech" << endl;
-		//console.Signal();
+		console.Wait();
+		MOVE_CURSOR(0, 18);
+		cout << "Done removing wheel, WheelRemoveTech" << endl;
+		console.Signal();
 	}
 	return 0;
 }
@@ -302,9 +306,10 @@ int WheelReplaceTech::main(void) {
 		rearWheelReplaceDone.Signal();
 		rearWheelReplaceDone.Signal();
 
-		//console.Wait();
-		//cout << "Done replacing wheels, WheelRepaceTech" << endl;
-		//console.Signal();
+		console.Wait();
+		MOVE_CURSOR(0, 19);
+		cout << "Done replacing wheels, WheelRepaceTech" << endl;
+		console.Signal();
 	}
 	return 0;
 }
