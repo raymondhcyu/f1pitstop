@@ -37,12 +37,6 @@ private:
 			cout << carNum << "\t" << laps << "\t" << endl;
 			console.Signal();
 
-			// Debugging
-			console.Wait();
-			MOVE_CURSOR(0, 13);
-			cout << entryLight.Read() << endl;
-			console.Signal();
-
 			// Check for pit condition
 			if ((entryLight.Read() == 1) && ((laps == pitStopOne) || (laps == pitStopTwo))) {
 				entryLight.Wait();
@@ -57,13 +51,16 @@ private:
 				exitLight.Wait(); // wait for exit light
 				pitEmpty.Signal(); // signal that pit empty
 
-				//console.Wait();
-				//MOVE_CURSOR(0, carNum + 2);
-				//cout << "\t\t" << status[1] << endl;
-				//console.Signal();
-
 				laps++; // hotfix
 			}
+
+			else if (laps == 60) {
+				console.Wait();
+				MOVE_CURSOR(0, carNum + 2);
+				cout << "\t\t" << "Finished" << endl;
+				console.Signal();
+			}
+
 			else {
 				console.Wait();
 				MOVE_CURSOR(0, carNum + 2);

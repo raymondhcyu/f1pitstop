@@ -15,7 +15,7 @@ int main(void) {
 	car* myCars[instances]; // create cars as active class objects
 
 	cout << "Hit enter to start race!" << endl;
-	cout << "CAR\tLAP\tSTATUS\tPIT ACTION" << endl;
+	cout << "CAR\tLAP\tSTATUS" << endl;
 	getchar();
 
 	myCars[0] = new car(0, 30, 45);
